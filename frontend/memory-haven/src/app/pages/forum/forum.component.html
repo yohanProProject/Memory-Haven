@@ -1,110 +1,225 @@
-<div class="container mt-5">
-  <div class="row justify-content-center">
-    <div class="col-md-8 text-center">
-      <h1 class="display-4 mb-4">Forum Communautaire</h1>
-      <p class="lead mb-4">
-        Échangez avec d'autres personnes qui vivent des expériences similaires dans un environnement bienveillant. 
-        Partagez vos expériences, posez vos questions et trouvez du soutien dans notre communauté.
-      </p>
-      <button type="button" class="btn btn-primary btn-lg">Créer un nouveau sujet</button>
-    </div>
-  </div>
-</div>
-
-<div class="forum-categories">
-  <h2>Catégories du Forum</h2>
-  
-  <div class="category-grid">
-    <div class="card category-card">
-      <div class="category-icon">🧠</div>
-      <h3>Troubles de la Mémoire</h3>
-      <p>Discussions sur les différents troubles de la mémoire et leurs impacts</p>
-      <div class="category-stats">
-        <span>127 sujets</span>
-        <span>•</span>
-        <span>892 messages</span>
-      </div>
-    </div>
-
-    <div class="card category-card">
-      <div class="category-icon">👥</div>
-      <h3>Soutien aux Aidants</h3>
-      <p>Espace dédié aux proches et aidants pour partager leurs expériences</p>
-      <div class="category-stats">
-        <span>89 sujets</span>
-        <span>•</span>
-        <span>654 messages</span>
-      </div>
-    </div>
-
-    <div class="card category-card">
-      <div class="category-icon">💊</div>
-      <h3>Traitements et Thérapies</h3>
-      <p>Discussions sur les traitements, thérapies et approches innovantes</p>
-      <div class="category-stats">
-        <span>156 sujets</span>
-        <span>•</span>
-        <span>1,234 messages</span>
-      </div>
-    </div>
-
-    <div class="card category-card">
-      <div class="category-icon">🎯</div>
-      <h3>Activités Cognitives</h3>
-      <p>Partage d'exercices et activités pour stimuler la mémoire</p>
-      <div class="category-stats">
-        <span>73 sujets</span>
-        <span>•</span>
-        <span>567 messages</span>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="recent-topics">
-  <h2>Sujets Récents</h2>
-  
-  <div class="topic-list">
-    <div class="card topic-item">
-      <div class="topic-content">
-        <h3>Comment expliquer les troubles de mémoire aux enfants ?</h3>
-        <p>Cherche des conseils pour parler avec mes petits-enfants...</p>
-        <div class="topic-meta">
-          <span>Par Marie L.</span>
-          <span>•</span>
-          <span>Il y a 2 heures</span>
-          <span>•</span>
-          <span>12 réponses</span>
+<!-- Header Section -->
+<section class="forum-header py-5 bg-gradient-primary text-white">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-lg-8">
+        <h1 class="display-4 fw-bold mb-3">
+          <i class="fas fa-comments me-3"></i>Forum Communautaire
+        </h1>
+        <p class="lead mb-4">
+          Échangez avec la communauté, posez vos questions et partagez vos connaissances. 
+          Ensemble, nous créons un environnement d'apprentissage bienveillant.
+        </p>
+        <div class="d-flex flex-wrap gap-3">
+          <button class="btn btn-light btn-lg rounded-pill px-4" (click)="openNewTopicModal()">
+            <i class="fas fa-plus me-2"></i>Créer un sujet
+          </button>
+          <button class="btn btn-outline-light btn-lg rounded-pill px-4" (click)="scrollToCategories()">
+            <i class="fas fa-list me-2"></i>Voir les catégories
+          </button>
         </div>
       </div>
-    </div>
-
-    <div class="card topic-item">
-      <div class="topic-content">
-        <h3>Nouvelles recherches sur les exercices cognitifs</h3>
-        <p>Partage d'un article intéressant sur l'efficacité des exercices...</p>
-        <div class="topic-meta">
-          <span>Par Dr. Martin</span>
-          <span>•</span>
-          <span>Il y a 5 heures</span>
-          <span>•</span>
-          <span>8 réponses</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="card topic-item">
-      <div class="topic-content">
-        <h3>Gérer le stress en tant qu'aidant</h3>
-        <p>Comment trouvez-vous l'équilibre entre votre vie et l'aide...</p>
-        <div class="topic-meta">
-          <span>Par Jean P.</span>
-          <span>•</span>
-          <span>Il y a 1 jour</span>
-          <span>•</span>
-          <span>25 réponses</span>
+      <div class="col-lg-4 text-center">
+        <div class="stats-widget p-4 bg-white bg-opacity-10 rounded-4 backdrop-blur">
+          <h3 class="fw-bold mb-2">{{ forumStats.totalDiscussions }}</h3>
+          <p class="mb-1">Discussions actives</p>
+          <small class="opacity-75">{{ forumStats.activeUsers }} utilisateurs en ligne</small>
         </div>
       </div>
     </div>
   </div>
+</section>
+
+<!-- Search and Filters -->
+<section class="forum-controls py-4 bg-light">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-lg-6 mb-3 mb-lg-0">
+        <div class="search-container position-relative">
+          <input 
+            type="text" 
+            class="form-control form-control-lg rounded-pill ps-5" 
+            placeholder="Rechercher dans le forum..."
+            [(ngModel)]="searchQuery"
+            (input)="onSearch()">
+          <i class="fas fa-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="d-flex justify-content-end gap-3">
+          <select class="form-select rounded-pill" [(ngModel)]="selectedSort" (change)="onSortChange()">
+            <option value="recent">Plus récents</option>
+            <option value="popular">Plus populaires</option>
+            <option value="answered">Avec réponses</option>
+            <option value="unanswered">Sans réponse</option>
+          </select>
+          <select class="form-select rounded-pill" [(ngModel)]="selectedCategory" (change)="onCategoryFilter()">
+            <option value="">Toutes les catégories</option>
+            <option *ngFor="let category of categories" [value]="category.id">{{ category.name }}</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Categories Section -->
+<section class="categories-section py-5" id="categories">
+  <div class="container">
+    <div class="text-center mb-5">
+      <h2 class="display-6 fw-bold mb-3">Catégories du Forum</h2>
+      <p class="lead text-muted">Explorez les différents sujets de discussion</p>
+    </div>
+    
+    <div class="row g-4">
+      <div class="col-lg-4 col-md-6 mb-4" *ngFor="let category of categories">
+        <div class="category-card h-100 p-4 bg-white rounded-4 shadow-sm hover-lift cursor-pointer"
+             (click)="selectCategory(category.id)">
+          <div class="d-flex align-items-start">
+            <div class="category-icon me-3">
+              <div class="icon-wrapper rounded-3 p-3" [style.background]="category.color">
+                <i [class]="category.icon" class="fa-2x text-white"></i>
+              </div>
+            </div>
+            <div class="flex-grow-1">
+              <h5 class="fw-bold mb-2">{{ category.name }}</h5>
+              <p class="text-muted mb-3 small">{{ category.description }}</p>
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="badge bg-primary rounded-pill">
+                  {{ category.discussionCount }} discussions
+                </span>
+                <small class="text-muted">
+                  <i class="fas fa-clock me-1"></i>{{ category.lastActivity }}
+                </small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Recent Discussions -->
+<section class="discussions-section py-5">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="fw-bold mb-0">
+        <i class="fas fa-fire text-danger me-2"></i>Discussions Récentes
+      </h2>
+      <button class="btn btn-outline-primary rounded-pill" (click)="refreshDiscussions()">
+        <i class="fas fa-sync-alt me-2"></i>Actualiser
+      </button>
+    </div>
+    
+    <!-- Discussion List -->
+    <div class="discussion-list">
+      <div class="discussion-card mb-3 p-4 bg-white rounded-4 shadow-sm hover-lift"
+           *ngFor="let discussion of filteredDiscussions">
+        <div class="row align-items-center">
+          <div class="col-lg-8">
+            <div class="d-flex align-items-start">
+              <!-- Avatar -->
+              <div class="avatar me-3">
+                <div class="avatar-circle bg-primary text-white rounded-circle d-flex align-items-center justify-content-center">
+                  {{ discussion.author.charAt(0).toUpperCase() }}
+                </div>
+              </div>
+              
+              <!-- Content -->
+              <div class="flex-grow-1">
+                <div class="d-flex align-items-center mb-2">
+                  <span class="badge me-2" [style.background-color]="getCategoryColor(discussion.categoryId)">
+                    {{ getCategoryName(discussion.categoryId) }}
+                  </span>
+                  <span class="badge bg-success me-2" *ngIf="discussion.isResolved">
+                    <i class="fas fa-check me-1"></i>Résolu
+                  </span>
+                  <span class="badge bg-warning" *ngIf="discussion.isPinned">
+                    <i class="fas fa-thumbtack me-1"></i>Épinglé
+                  </span>
+                </div>
+                
+                <h5 class="fw-bold mb-2 cursor-pointer text-hover-primary" 
+                    (click)="openDiscussion(discussion.id)">
+                  {{ discussion.title }}
+                </h5>
+                
+                <p class="text-muted mb-2 small">{{ discussion.preview }}</p>
+                
+                <div class="meta-info small text-muted">
+                  <span class="me-3">
+                    <i class="fas fa-user me-1"></i>{{ discussion.author }}
+                  </span>
+                  <span class="me-3">
+                    <i class="fas fa-clock me-1"></i>{{ discussion.createdAt }}
+                  </span>
+                  <span class="me-3">
+                    <i class="fas fa-eye me-1"></i>{{ discussion.views }} vues
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="col-lg-4 text-lg-end">
+            <div class="discussion-stats">
+              <div class="stat-item mb-2">
+                <span class="fw-bold text-primary fs-5">{{ discussion.replies }}</span>
+                <small class="text-muted d-block">réponses</small>
+              </div>
+              
+              <div class="d-flex align-items-center justify-content-lg-end">
+                <div class="vote-buttons me-3">
+                  <button class="btn btn-sm btn-outline-success rounded-pill me-1" 
+                          (click)="voteDiscussion(discussion.id, 'up')">
+                    <i class="fas fa-thumbs-up"></i>
+                    <span class="ms-1">{{ discussion.upvotes }}</span>
+                  </button>
+                  <button class="btn btn-sm btn-outline-danger rounded-pill" 
+                          (click)="voteDiscussion(discussion.id, 'down')">
+                    <i class="fas fa-thumbs-down"></i>
+                    <span class="ms-1">{{ discussion.downvotes }}</span>
+                  </button>
+                </div>
+                
+                <button class="btn btn-primary btn-sm rounded-pill" 
+                        (click)="openDiscussion(discussion.id)">
+                  <i class="fas fa-reply me-1"></i>Répondre
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Empty State -->
+    <div class="text-center py-5" *ngIf="filteredDiscussions.length === 0">
+      <div class="empty-state">
+        <i class="fas fa-comments fa-4x text-muted mb-3"></i>
+        <h4 class="text-muted mb-3">Aucune discussion trouvée</h4>
+        <p class="text-muted mb-4">Soyez le premier à créer une discussion dans cette catégorie !</p>
+        <button class="btn btn-primary rounded-pill px-4" (click)="openNewTopicModal()">
+          <i class="fas fa-plus me-2"></i>Créer le premier sujet
+        </button>
+      </div>
+    </div>
+    
+    <!-- Load More -->
+    <div class="text-center mt-5" *ngIf="filteredDiscussions.length > 0 && hasMoreDiscussions">
+      <button class="btn btn-outline-primary btn-lg rounded-pill px-5" (click)="loadMoreDiscussions()">
+        <i class="fas fa-plus me-2"></i>Charger plus de discussions
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- Floating Action Button -->
+<div class="fab-container">
+  <button class="fab btn btn-primary rounded-circle shadow-lg" 
+          (click)="openNewTopicModal()"
+          title="Créer un nouveau sujet">
+    <i class="fas fa-plus"></i>
+  </button>
 </div>

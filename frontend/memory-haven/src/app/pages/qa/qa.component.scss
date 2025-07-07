@@ -1,0 +1,450 @@
+// Variables
+$success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+$primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+$warning-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+
+// Q&A Header
+.qa-header {
+  background: $success-gradient;
+  position: relative;
+  overflow: hidden;
+  
+  &:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 100" fill="white" opacity="0.1"><polygon points="0,0 1000,0 1000,100"/></svg>');
+    background-size: cover;
+  }
+  
+  .stats-widget {
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.2);
+    transition: all 0.3s ease;
+    
+    &:hover {
+      transform: translateY(-5px);
+      background: rgba(255,255,255,0.2) !important;
+    }
+  }
+}
+
+// Question Form Section
+.question-form-section {
+  .question-form-card {
+    border: none;
+    animation: slideInDown 0.5s ease-out;
+    
+    .form-control, .form-select {
+      transition: all 0.3s ease;
+      
+      &:focus {
+        box-shadow: 0 0 0 0.2rem rgba(79, 172, 254, 0.25);
+        border-color: #4facfe;
+        transform: translateY(-2px);
+      }
+    }
+    
+    textarea.form-control {
+      resize: vertical;
+      min-height: 120px;
+    }
+  }
+}
+
+// Q&A Controls
+.qa-controls {
+  border-bottom: 1px solid rgba(0,0,0,0.1);
+  
+  .search-container {
+    .form-control {
+      border: none;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
+      
+      &:focus {
+        box-shadow: 0 4px 20px rgba(79, 172, 254, 0.3);
+        transform: translateY(-2px);
+      }
+    }
+  }
+  
+  .form-select {
+    border: 1px solid #e9ecef;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+    
+    &:focus {
+      border-color: #4facfe;
+      box-shadow: 0 0 0 0.2rem rgba(79, 172, 254, 0.25);
+    }
+  }
+}
+
+// Questions Section
+.questions-section {
+  .question-card {
+    border: none;
+    transition: all 0.3s ease;
+    position: relative;
+    
+    &:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 30px rgba(0,0,0,0.1) !important;
+    }
+    
+    .vote-section {
+      .btn {
+        width: 40px;
+        height: 40px;
+        border: 2px solid;
+        transition: all 0.3s ease;
+        
+        &.active {
+          transform: scale(1.1);
+        }
+        
+        &:hover {
+          transform: scale(1.05);
+        }
+      }
+      
+      .vote-count {
+        margin: 0.5rem 0;
+        font-size: 1.25rem;
+        animation: pulse 2s infinite;
+      }
+      
+      .answers-count {
+        padding: 0.5rem;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 0.5rem;
+        transition: all 0.3s ease;
+        
+        &:hover {
+          transform: scale(1.05);
+        }
+      }
+    }
+    
+    .question-content {
+      .text-hover-primary {
+        transition: color 0.3s ease;
+        
+        &:hover {
+          color: #4facfe !important;
+        }
+      }
+      
+      .author-info {
+        .avatar-circle {
+          width: 40px;
+          height: 40px;
+          font-weight: bold;
+          font-size: 1rem;
+          background: $primary-gradient;
+        }
+      }
+      
+      .question-actions {
+        .btn {
+          transition: all 0.3s ease;
+          
+          &:hover {
+            transform: translateY(-2px);
+          }
+        }
+      }
+      
+      .question-tags {
+        .badge {
+          transition: all 0.3s ease;
+          
+          &:hover {
+            transform: scale(1.05);
+            background: $primary-gradient !important;
+            color: white !important;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Empty State
+.empty-state {
+  padding: 3rem 1rem;
+  
+  i {
+    opacity: 0.5;
+    animation: float 3s ease-in-out infinite;
+  }
+}
+
+// Floating Action Button
+.fab-container {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 1000;
+  
+  .fab {
+    width: 60px;
+    height: 60px;
+    border: none;
+    font-size: 1.5rem;
+    background: $success-gradient;
+    transition: all 0.3s ease;
+    
+    &:hover {
+      transform: scale(1.1) rotate(90deg);
+      box-shadow: 0 10px 25px rgba(79, 172, 254, 0.4);
+    }
+  }
+}
+
+// Utility Classes
+.cursor-pointer {
+  cursor: pointer !important;
+}
+
+.hover-lift {
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  }
+}
+
+.bg-gradient-success {
+  background: $success-gradient !important;
+}
+
+// Badge Styles
+.badge {
+  font-size: 0.75rem;
+  transition: all 0.3s ease;
+  
+  &.bg-primary {
+    background: $primary-gradient !important;
+  }
+  
+  &.bg-success {
+    background: $success-gradient !important;
+  }
+  
+  &.bg-warning {
+    background: $warning-gradient !important;
+  }
+}
+
+// Button Styles
+.btn-primary {
+  background: $primary-gradient;
+  border: none;
+  
+  &:hover {
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4c93 100%);
+    transform: translateY(-2px);
+  }
+}
+
+.btn-success {
+  background: $success-gradient;
+  border: none;
+  
+  &:hover {
+    background: linear-gradient(135deg, #4292dc 0%, #00d4e6 100%);
+    transform: translateY(-2px);
+  }
+}
+
+.btn-outline-primary {
+  border-color: #4facfe;
+  color: #4facfe;
+  
+  &:hover {
+    background: $primary-gradient;
+    border-color: transparent;
+    transform: translateY(-2px);
+  }
+}
+
+.btn-outline-success {
+  border-color: #4facfe;
+  color: #4facfe;
+  
+  &:hover {
+    background: $success-gradient;
+    border-color: transparent;
+  }
+}
+
+.btn-outline-secondary {
+  &:hover {
+    transform: translateY(-2px);
+  }
+}
+
+.btn-outline-warning {
+  &:hover {
+    background: $warning-gradient;
+    border-color: transparent;
+    color: white;
+  }
+}
+
+// Animations
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .qa-header {
+    text-align: center;
+    
+    .display-4 {
+      font-size: 2rem;
+    }
+    
+    .stats-widget {
+      margin-top: 2rem;
+    }
+  }
+  
+  .qa-controls {
+    .d-flex {
+      flex-direction: column;
+      gap: 1rem;
+    }
+    
+    .form-select {
+      width: 100%;
+    }
+  }
+  
+  .question-card {
+    .row {
+      flex-direction: column;
+    }
+    
+    .vote-section {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      
+      .btn {
+        margin: 0;
+      }
+      
+      .vote-count {
+        margin: 0 0.5rem;
+      }
+      
+      .answers-count {
+        margin-left: 1rem;
+      }
+    }
+    
+    .question-actions {
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      
+      .btn {
+        flex: 1;
+        min-width: auto;
+      }
+    }
+  }
+  
+  .fab-container {
+    bottom: 1rem;
+    right: 1rem;
+    
+    .fab {
+      width: 50px;
+      height: 50px;
+      font-size: 1.2rem;
+    }
+  }
+}
+
+@media (max-width: 576px) {
+  .qa-header {
+    padding: 2rem 0;
+    
+    .btn-lg {
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+    }
+  }
+  
+  .question-form-section {
+    .question-form-card {
+      margin: 0 0.5rem;
+      padding: 1.5rem;
+    }
+  }
+  
+  .question-card {
+    padding: 1rem;
+    margin-bottom: 1rem;
+    
+    .question-meta {
+      flex-direction: column;
+      gap: 1rem;
+      
+      .author-info {
+        justify-content: center;
+      }
+    }
+  }
+}

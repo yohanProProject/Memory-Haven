@@ -1,12 +1,280 @@
-<div class="container mt-5">
-  <div class="row justify-content-center">
-    <div class="col-md-8 text-center">
-      <h1 class="display-4 mb-4">Questions & Réponses</h1>
-      <p class="lead mb-4">
-        Trouvez des réponses à vos questions grâce à notre communauté d'experts et de professionnels de la santé. 
-        Posez vos questions ou aidez d'autres personnes avec vos connaissances.
-      </p>
-      <button type="button" class="btn btn-primary btn-lg">Poser une question</button>
+<!-- Header Section -->
+<section class="qa-header py-5 bg-gradient-success text-white">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-lg-8">
+        <h1 class="display-4 fw-bold mb-3">
+          <i class="fas fa-question-circle me-3"></i>Questions & Réponses
+        </h1>
+        <p class="lead mb-4">
+          Posez vos questions académiques et obtenez des réponses d'experts et d'étudiants expérimentés. 
+          Chaque question est une opportunité d'apprentissage pour toute la communauté.
+        </p>
+        <div class="d-flex flex-wrap gap-3">
+          <button class="btn btn-light btn-lg rounded-pill px-4" (click)="toggleQuestionForm()">
+            <i class="fas fa-plus me-2"></i>Poser une question
+          </button>
+          <button class="btn btn-outline-light btn-lg rounded-pill px-4" (click)="scrollToQuestions()">
+            <i class="fas fa-search me-2"></i>Parcourir les questions
+          </button>
+        </div>
+      </div>
+      <div class="col-lg-4 text-center">
+        <div class="stats-widget p-4 bg-white bg-opacity-10 rounded-4 backdrop-blur">
+          <h3 class="fw-bold mb-2">{{ qaStats.totalQuestions }}</h3>
+          <p class="mb-1">Questions posées</p>
+          <small class="opacity-75">{{ qaStats.resolvedQuestions }}% résolues</small>
+        </div>
+      </div>
     </div>
   </div>
+</section>
+
+<!-- Question Form -->
+<section class="question-form-section py-4 bg-light" *ngIf="showQuestionForm">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="question-form-card p-4 bg-white rounded-4 shadow-sm">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="fw-bold mb-0">
+              <i class="fas fa-edit text-primary me-2"></i>Poser une nouvelle question
+            </h3>
+            <button class="btn btn-outline-secondary btn-sm rounded-pill" (click)="toggleQuestionForm()">
+              <i class="fas fa-times me-1"></i>Fermer
+            </button>
+          </div>
+          
+          <form (ngSubmit)="submitQuestion()" #questionForm="ngForm">
+            <div class="mb-3">
+              <label for="questionTitle" class="form-label fw-semibold">
+                Titre de votre question <span class="text-danger">*</span>
+              </label>
+              <input 
+                type="text" 
+                class="form-control form-control-lg rounded-pill" 
+                id="questionTitle"
+                [(ngModel)]="newQuestion.title"
+                name="title"
+                placeholder="Ex: Comment résoudre une équation du second degré ?"
+                required>
+            </div>
+            
+            <div class="mb-3">
+              <label for="questionCategory" class="form-label fw-semibold">Matière</label>
+              <select class="form-select rounded-pill" id="questionCategory" [(ngModel)]="newQuestion.category" name="category">
+                <option value="">Sélectionner une matière</option>
+                <option value="math">Mathématiques</option>
+                <option value="french">Français</option>
+                <option value="sciences">Sciences</option>
+                <option value="history">Histoire</option>
+                <option value="languages">Langues</option>
+                <option value="other">Autre</option>
+              </select>
+            </div>
+            
+            <div class="mb-4">
+              <label for="questionDescription" class="form-label fw-semibold">
+                Description détaillée <span class="text-danger">*</span>
+              </label>
+              <textarea 
+                class="form-control" 
+                id="questionDescription"
+                [(ngModel)]="newQuestion.description"
+                name="description"
+                rows="5"
+                placeholder="Décrivez votre question en détail. Plus vous donnez d'informations, meilleures seront les réponses..."
+                required></textarea>
+            </div>
+            
+            <div class="d-flex justify-content-end gap-3">
+              <button type="button" class="btn btn-outline-secondary rounded-pill px-4" (click)="resetForm()">
+                <i class="fas fa-undo me-2"></i>Réinitialiser
+              </button>
+              <button type="submit" class="btn btn-primary rounded-pill px-4" [disabled]="!questionForm.valid">
+                <i class="fas fa-paper-plane me-2"></i>Publier la question
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Search and Filters -->
+<section class="qa-controls py-4" [class.bg-light]="!showQuestionForm">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-lg-6 mb-3 mb-lg-0">
+        <div class="search-container position-relative">
+          <input 
+            type="text" 
+            class="form-control form-control-lg rounded-pill ps-5" 
+            placeholder="Rechercher dans les questions..."
+            [(ngModel)]="searchQuery"
+            (input)="onSearch()">
+          <i class="fas fa-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="d-flex justify-content-end gap-3">
+          <select class="form-select rounded-pill" [(ngModel)]="selectedSort" (change)="onSortChange()">
+            <option value="recent">Plus récentes</option>
+            <option value="popular">Plus populaires</option>
+            <option value="votes">Plus votées</option>
+            <option value="unanswered">Sans réponse</option>
+          </select>
+          <select class="form-select rounded-pill" [(ngModel)]="selectedCategory" (change)="onCategoryFilter()">
+            <option value="">Toutes les matières</option>
+            <option value="math">Mathématiques</option>
+            <option value="french">Français</option>
+            <option value="sciences">Sciences</option>
+            <option value="history">Histoire</option>
+            <option value="languages">Langues</option>
+            <option value="other">Autre</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Questions List -->
+<section class="questions-section py-5" id="questions">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="fw-bold mb-0">
+        <i class="fas fa-list text-primary me-2"></i>Questions de la Communauté
+      </h2>
+      <div class="question-stats">
+        <span class="badge bg-primary rounded-pill me-2">{{ filteredQuestions.length }} questions</span>
+        <button class="btn btn-outline-primary rounded-pill btn-sm" (click)="refreshQuestions()">
+          <i class="fas fa-sync-alt me-1"></i>Actualiser
+        </button>
+      </div>
+    </div>
+    
+    <!-- Question Cards -->
+    <div class="questions-list">
+      <div class="question-card mb-4 p-4 bg-white rounded-4 shadow-sm hover-lift"
+           *ngFor="let question of filteredQuestions">
+        <div class="row">
+          <!-- Vote Section -->
+          <div class="col-lg-1 col-md-2 mb-3 mb-lg-0">
+            <div class="vote-section text-center">
+              <button class="btn btn-outline-success btn-sm rounded-circle mb-2" 
+                      (click)="voteQuestion(question.id, 'up')"
+                      [class.active]="question.userVote === 'up'">
+                <i class="fas fa-chevron-up"></i>
+              </button>
+              <div class="vote-count fw-bold text-primary fs-5">{{ question.votes }}</div>
+              <button class="btn btn-outline-danger btn-sm rounded-circle mt-2" 
+                      (click)="voteQuestion(question.id, 'down')"
+                      [class.active]="question.userVote === 'down'">
+                <i class="fas fa-chevron-down"></i>
+              </button>
+              
+              <div class="answers-count mt-3 text-center">
+                <div class="fw-bold text-secondary">{{ question.answers }}</div>
+                <small class="text-muted">réponses</small>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Question Content -->
+          <div class="col-lg-11 col-md-10">
+            <div class="question-content">
+              <!-- Question Header -->
+              <div class="d-flex align-items-center mb-3">
+                <span class="badge me-2" [style.background-color]="getCategoryColor(question.category)">
+                  {{ getCategoryName(question.category) }}
+                </span>
+                <span class="badge bg-success me-2" *ngIf="question.isAnswered">
+                  <i class="fas fa-check me-1"></i>Répondu
+                </span>
+                <span class="badge bg-warning" *ngIf="question.isFeatured">
+                  <i class="fas fa-star me-1"></i>En vedette
+                </span>
+                <span class="ms-auto small text-muted">
+                  <i class="fas fa-clock me-1"></i>{{ question.createdAt }}
+                </span>
+              </div>
+              
+              <!-- Question Title -->
+              <h4 class="fw-bold mb-3 cursor-pointer text-hover-primary" 
+                  (click)="openQuestion(question.id)">
+                {{ question.title }}
+              </h4>
+              
+              <!-- Question Preview -->
+              <p class="text-muted mb-3">{{ question.preview }}</p>
+              
+              <!-- Question Meta -->
+              <div class="question-meta d-flex align-items-center justify-content-between">
+                <div class="author-info d-flex align-items-center">
+                  <div class="avatar me-2">
+                    <div class="avatar-circle bg-primary text-white rounded-circle d-flex align-items-center justify-content-center">
+                      {{ question.author.charAt(0).toUpperCase() }}
+                    </div>
+                  </div>
+                  <div>
+                    <div class="fw-semibold">{{ question.author }}</div>
+                    <small class="text-muted">{{ question.authorReputation }} points de réputation</small>
+                  </div>
+                </div>
+                
+                <div class="question-actions d-flex gap-2">
+                  <button class="btn btn-outline-primary btn-sm rounded-pill" (click)="openQuestion(question.id)">
+                    <i class="fas fa-reply me-1"></i>Répondre
+                  </button>
+                  <button class="btn btn-outline-secondary btn-sm rounded-pill" (click)="shareQuestion(question.id)">
+                    <i class="fas fa-share me-1"></i>Partager
+                  </button>
+                  <button class="btn btn-outline-warning btn-sm rounded-pill" (click)="bookmarkQuestion(question.id)">
+                    <i [class]="question.isBookmarked ? 'fas fa-bookmark' : 'far fa-bookmark'"></i>
+                  </button>
+                </div>
+              </div>
+              
+              <!-- Tags -->
+              <div class="question-tags mt-3" *ngIf="question.tags.length > 0">
+                <span class="badge bg-light text-dark me-1" *ngFor="let tag of question.tags">
+                  #{{ tag }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Empty State -->
+    <div class="text-center py-5" *ngIf="filteredQuestions.length === 0">
+      <div class="empty-state">
+        <i class="fas fa-question-circle fa-4x text-muted mb-3"></i>
+        <h4 class="text-muted mb-3">Aucune question trouvée</h4>
+        <p class="text-muted mb-4">Soyez le premier à poser une question dans cette catégorie !</p>
+        <button class="btn btn-primary rounded-pill px-4" (click)="toggleQuestionForm()">
+          <i class="fas fa-plus me-2"></i>Poser la première question
+        </button>
+      </div>
+    </div>
+    
+    <!-- Load More -->
+    <div class="text-center mt-5" *ngIf="filteredQuestions.length > 0 && hasMoreQuestions">
+      <button class="btn btn-outline-primary btn-lg rounded-pill px-5" (click)="loadMoreQuestions()">
+        <i class="fas fa-plus me-2"></i>Charger plus de questions
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- Floating Action Button -->
+<div class="fab-container">
+  <button class="fab btn btn-success rounded-circle shadow-lg" 
+          (click)="toggleQuestionForm()"
+          title="Poser une question">
+    <i class="fas fa-question"></i>
+  </button>
 </div>

@@ -1,12 +1,443 @@
-<div class="container mt-5">
-  <div class="row justify-content-center">
-    <div class="col-md-8 text-center">
-      <h1 class="display-4 mb-4">Mon Profil</h1>
-      <p class="lead mb-4">
-        Gérez vos informations personnelles, préférences et suivez votre progression sur Memory Haven. 
-        Personnalisez votre expérience et accédez à vos activités favorites.
-      </p>
-      <button type="button" class="btn btn-primary btn-lg">Modifier mon profil</button>
+<!-- Header Section -->
+<section class="profile-header py-5 bg-gradient-info text-white">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-lg-4 text-center mb-4 mb-lg-0">
+        <div class="profile-avatar position-relative">
+          <div class="avatar-container">
+            <img [src]="userProfile.avatarUrl" 
+                 [alt]="userProfile.firstName + ' ' + userProfile.lastName"
+                 class="avatar-img rounded-circle shadow-lg"
+                 *ngIf="userProfile.avatarUrl">
+            <div class="avatar-placeholder rounded-circle shadow-lg d-flex align-items-center justify-content-center"
+                 *ngIf="!userProfile.avatarUrl">
+              <i class="fas fa-user fa-4x"></i>
+            </div>
+          </div>
+          <button class="btn btn-light btn-sm rounded-circle avatar-edit-btn" 
+                  (click)="openAvatarEditor()"
+                  title="Modifier la photo">
+            <i class="fas fa-camera"></i>
+          </button>
+        </div>
+      </div>
+      
+      <div class="col-lg-8">
+        <div class="profile-info">
+          <h1 class="display-5 fw-bold mb-2">
+            {{ userProfile.firstName }} {{ userProfile.lastName }}
+          </h1>
+          <p class="lead mb-3">{{ userProfile.email }}</p>
+          
+          <div class="user-badges mb-3">
+            <span class="badge bg-light text-dark me-2" *ngFor="let badge of userProfile.badges">
+              <i [class]="badge.icon" class="me-1"></i>{{ badge.name }}
+            </span>
+          </div>
+          
+          <div class="profile-stats row text-center">
+            <div class="col-4">
+              <div class="stat-item">
+                <h3 class="fw-bold mb-1">{{ userProfile.stats.postsCount }}</h3>
+                <small>Messages</small>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="stat-item">
+                <h3 class="fw-bold mb-1">{{ userProfile.stats.helpfulAnswers }}</h3>
+                <small>Réponses utiles</small>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="stat-item">
+                <h3 class="fw-bold mb-1">{{ userProfile.stats.reputation }}</h3>
+                <small>Réputation</small>
+              </div>
+            </div>
+          </div>
+          
+          <div class="profile-actions mt-4">
+            <button class="btn btn-light btn-lg rounded-pill me-3" (click)="editProfile()">
+              <i class="fas fa-edit me-2"></i>Modifier mon profil
+            </button>
+            <button class="btn btn-outline-light btn-lg rounded-pill" (click)="downloadData()">
+              <i class="fas fa-download me-2"></i>Exporter mes données
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Edit Profile Modal -->
+<div class="profile-edit-modal" *ngIf="showEditModal" [@fadeInOut]>
+  <div class="modal-overlay" (click)="closeEditModal()"></div>
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="fw-bold mb-0">Modifier mon profil</h3>
+      <button class="btn btn-outline-secondary btn-sm rounded-circle" (click)="closeEditModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    
+    <div class="modal-body">
+      <form (ngSubmit)="saveProfile()" #profileForm="ngForm">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label fw-semibold">Prénom</label>
+            <input type="text" 
+                   class="form-control" 
+                   [(ngModel)]="editableProfile.firstName"
+                   name="firstName"
+                   required>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label fw-semibold">Nom</label>
+            <input type="text" 
+                   class="form-control" 
+                   [(ngModel)]="editableProfile.lastName"
+                   name="lastName"
+                   required>
+          </div>
+        </div>
+        
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Email</label>
+          <input type="email" 
+                 class="form-control" 
+                 [(ngModel)]="editableProfile.email"
+                 name="email"
+                 required>
+        </div>
+        
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label fw-semibold">Niveau d'études</label>
+            <select class="form-select" [(ngModel)]="editableProfile.studyLevel" name="studyLevel">
+              <option value="">Sélectionner</option>
+              <option value="college">Collège</option>
+              <option value="lycee">Lycée</option>
+              <option value="superieur">Supérieur</option>
+            </select>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label fw-semibold">Matière préférée</label>
+            <select class="form-select" [(ngModel)]="editableProfile.favoriteSubject" name="favoriteSubject">
+              <option value="">Sélectionner</option>
+              <option value="math">Mathématiques</option>
+              <option value="french">Français</option>
+              <option value="sciences">Sciences</option>
+              <option value="history">Histoire</option>
+              <option value="languages">Langues</option>
+              <option value="other">Autre</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="mb-4">
+          <label class="form-label fw-semibold">Bio</label>
+          <textarea class="form-control" 
+                    rows="3"
+                    [(ngModel)]="editableProfile.bio"
+                    name="bio"
+                    placeholder="Parlez-nous de vous..."></textarea>
+        </div>
+        
+        <div class="d-flex justify-content-end gap-3">
+          <button type="button" class="btn btn-outline-secondary rounded-pill" (click)="closeEditModal()">
+            Annuler
+          </button>
+          <button type="submit" class="btn btn-primary rounded-pill" [disabled]="!profileForm.valid">
+            <i class="fas fa-save me-2"></i>Sauvegarder
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 </div>
+
+<!-- Navigation Tabs -->
+<section class="profile-navigation py-3 bg-light">
+  <div class="container">
+    <ul class="nav nav-pills justify-content-center">
+      <li class="nav-item">
+        <button class="nav-link rounded-pill" 
+                [class.active]="activeTab === 'overview'"
+                (click)="setActiveTab('overview')">
+          <i class="fas fa-chart-pie me-2"></i>Vue d'ensemble
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link rounded-pill" 
+                [class.active]="activeTab === 'activity'"
+                (click)="setActiveTab('activity')">
+          <i class="fas fa-history me-2"></i>Activité récente
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link rounded-pill" 
+                [class.active]="activeTab === 'achievements'"
+                (click)="setActiveTab('achievements')">
+          <i class="fas fa-trophy me-2"></i>Réalisations
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link rounded-pill" 
+                [class.active]="activeTab === 'settings'"
+                (click)="setActiveTab('settings')">
+          <i class="fas fa-cog me-2"></i>Paramètres
+        </button>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- Tab Content -->
+<section class="tab-content py-5">
+  <div class="container">
+    
+    <!-- Overview Tab -->
+    <div class="tab-pane" *ngIf="activeTab === 'overview'" [@slideInOut]>
+      <div class="row g-4">
+        <!-- Statistics Cards -->
+        <div class="col-lg-8">
+          <div class="row g-4 mb-4">
+            <div class="col-md-6" *ngFor="let stat of detailedStats">
+              <div class="stat-card p-4 bg-white rounded-4 shadow-sm hover-lift h-100">
+                <div class="d-flex align-items-center">
+                  <div class="stat-icon me-3">
+                    <div class="icon-wrapper rounded-3 p-3" [style.background]="stat.color">
+                      <i [class]="stat.icon" class="fa-2x text-white"></i>
+                    </div>
+                  </div>
+                  <div class="flex-grow-1">
+                    <h3 class="fw-bold text-primary mb-1">{{ stat.value }}</h3>
+                    <p class="text-muted mb-0">{{ stat.label }}</p>
+                    <small class="text-success">{{ stat.change }}</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Activity Chart -->
+          <div class="activity-chart-card p-4 bg-white rounded-4 shadow-sm">
+            <h4 class="fw-bold mb-4">Activité des 30 derniers jours</h4>
+            <div class="chart-placeholder">
+              <div class="activity-grid">
+                <div class="activity-day" 
+                     *ngFor="let day of activityData; let i = index"
+                     [class.active]="day.activity > 0"
+                     [style.opacity]="day.activity / 10"
+                     [title]="day.date + ': ' + day.activity + ' actions'">
+                </div>
+              </div>
+              <div class="chart-legend mt-3 d-flex justify-content-between align-items-center">
+                <small class="text-muted">Moins actif</small>
+                <div class="legend-colors d-flex gap-1">
+                  <div class="legend-square opacity-25"></div>
+                  <div class="legend-square opacity-50"></div>
+                  <div class="legend-square opacity-75"></div>
+                  <div class="legend-square"></div>
+                </div>
+                <small class="text-muted">Plus actif</small>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Progress & Goals -->
+        <div class="col-lg-4">
+          <div class="progress-card p-4 bg-white rounded-4 shadow-sm mb-4">
+            <h5 class="fw-bold mb-4">Progression</h5>
+            
+            <div class="progress-item mb-4" *ngFor="let progress of progressData">
+              <div class="d-flex justify-content-between mb-2">
+                <span class="fw-semibold">{{ progress.label }}</span>
+                <span class="text-primary">{{ progress.current }}/{{ progress.target }}</span>
+              </div>
+              <div class="progress">
+                <div class="progress-bar" 
+                     [style.width]="(progress.current / progress.target) * 100 + '%'"
+                     [style.background]="progress.color"></div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Recent Achievements -->
+          <div class="achievements-card p-4 bg-white rounded-4 shadow-sm">
+            <h5 class="fw-bold mb-4">Dernières réalisations</h5>
+            
+            <div class="achievement-item d-flex align-items-center mb-3"
+                 *ngFor="let achievement of recentAchievements">
+              <div class="achievement-icon me-3">
+                <div class="icon-wrapper rounded-circle" [style.background]="achievement.color">
+                  <i [class]="achievement.icon" class="text-white"></i>
+                </div>
+              </div>
+              <div class="flex-grow-1">
+                <h6 class="fw-bold mb-1">{{ achievement.title }}</h6>
+                <small class="text-muted">{{ achievement.date }}</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Activity Tab -->
+    <div class="tab-pane" *ngIf="activeTab === 'activity'" [@slideInOut]>
+      <div class="activity-list">
+        <h3 class="fw-bold mb-4">Activité récente</h3>
+        
+        <div class="activity-filters mb-4">
+          <div class="d-flex gap-3">
+            <select class="form-select" [(ngModel)]="activityFilter" (change)="filterActivity()">
+              <option value="">Toutes les activités</option>
+              <option value="posts">Messages</option>
+              <option value="questions">Questions</option>
+              <option value="answers">Réponses</option>
+              <option value="downloads">Téléchargements</option>
+            </select>
+            <button class="btn btn-outline-primary rounded-pill" (click)="refreshActivity()">
+              <i class="fas fa-sync-alt me-2"></i>Actualiser
+            </button>
+          </div>
+        </div>
+        
+        <div class="activity-timeline">
+          <div class="timeline-item" *ngFor="let activity of filteredActivity">
+            <div class="timeline-marker" [style.background]="getActivityColor(activity.type)">
+              <i [class]="getActivityIcon(activity.type)" class="text-white"></i>
+            </div>
+            <div class="timeline-content p-4 bg-white rounded-4 shadow-sm">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <h6 class="fw-bold mb-1">{{ activity.title }}</h6>
+                <small class="text-muted">{{ activity.date }}</small>
+              </div>
+              <p class="text-muted mb-2">{{ activity.description }}</p>
+              <div class="activity-meta">
+                <span class="badge bg-light text-dark me-2">{{ getActivityTypeLabel(activity.type) }}</span>
+                <span class="badge bg-primary" *ngIf="activity.points">+{{ activity.points }} points</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Achievements Tab -->
+    <div class="tab-pane" *ngIf="activeTab === 'achievements'" [@slideInOut]>
+      <div class="achievements-section">
+        <h3 class="fw-bold mb-4">Vos réalisations</h3>
+        
+        <div class="row g-4">
+          <div class="col-md-6 col-lg-4" *ngFor="let achievement of allAchievements">
+            <div class="achievement-card p-4 bg-white rounded-4 shadow-sm hover-lift h-100 text-center"
+                 [class.unlocked]="achievement.unlocked">
+              <div class="achievement-icon mb-3">
+                <div class="icon-wrapper mx-auto rounded-circle" 
+                     [style.background]="achievement.unlocked ? achievement.color : '#e9ecef'">
+                  <i [class]="achievement.icon" 
+                     [class.text-white]="achievement.unlocked"
+                     [class.text-muted]="!achievement.unlocked"
+                     class="fa-3x"></i>
+                </div>
+              </div>
+              <h5 class="fw-bold mb-2" 
+                  [class.text-muted]="!achievement.unlocked">{{ achievement.title }}</h5>
+              <p class="text-muted mb-3">{{ achievement.description }}</p>
+              
+              <div class="achievement-progress" *ngIf="!achievement.unlocked && achievement.progress">
+                <div class="progress mb-2">
+                  <div class="progress-bar bg-primary" 
+                       [style.width]="(achievement.progress.current / achievement.progress.required) * 100 + '%'"></div>
+                </div>
+                <small class="text-muted">
+                  {{ achievement.progress.current }}/{{ achievement.progress.required }} {{ achievement.progress.unit }}
+                </small>
+              </div>
+              
+              <div class="achievement-date" *ngIf="achievement.unlocked">
+                <small class="text-success">
+                  <i class="fas fa-check me-1"></i>Débloqué le {{ achievement.unlockedDate }}
+                </small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Settings Tab -->
+    <div class="tab-pane" *ngIf="activeTab === 'settings'" [@slideInOut]>
+      <div class="settings-section">
+        <h3 class="fw-bold mb-4">Paramètres du compte</h3>
+        
+        <div class="row g-4">
+          <!-- Notification Settings -->
+          <div class="col-lg-6">
+            <div class="settings-card p-4 bg-white rounded-4 shadow-sm">
+              <h5 class="fw-bold mb-4">Notifications</h5>
+              
+              <div class="setting-item d-flex justify-content-between align-items-center mb-3"
+                   *ngFor="let setting of notificationSettings">
+                <div>
+                  <h6 class="mb-1">{{ setting.label }}</h6>
+                  <small class="text-muted">{{ setting.description }}</small>
+                </div>
+                <div class="form-check form-switch">
+                  <input class="form-check-input" 
+                         type="checkbox" 
+                         [(ngModel)]="setting.enabled"
+                         (change)="updateNotificationSetting(setting.id)">
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Privacy Settings -->
+          <div class="col-lg-6">
+            <div class="settings-card p-4 bg-white rounded-4 shadow-sm">
+              <h5 class="fw-bold mb-4">Confidentialité</h5>
+              
+              <div class="setting-item d-flex justify-content-between align-items-center mb-3"
+                   *ngFor="let setting of privacySettings">
+                <div>
+                  <h6 class="mb-1">{{ setting.label }}</h6>
+                  <small class="text-muted">{{ setting.description }}</small>
+                </div>
+                <div class="form-check form-switch">
+                  <input class="form-check-input" 
+                         type="checkbox" 
+                         [(ngModel)]="setting.enabled"
+                         (change)="updatePrivacySetting(setting.id)">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Danger Zone -->
+        <div class="danger-zone mt-5">
+          <div class="p-4 bg-light border border-danger rounded-4">
+            <h5 class="fw-bold text-danger mb-3">Zone dangereuse</h5>
+            <p class="text-muted mb-4">
+              Ces actions sont irréversibles. Assurez-vous de bien comprendre les conséquences.
+            </p>
+            
+            <div class="d-flex gap-3">
+              <button class="btn btn-outline-danger rounded-pill" (click)="deleteAccount()">
+                <i class="fas fa-trash me-2"></i>Supprimer mon compte
+              </button>
+              <button class="btn btn-outline-warning rounded-pill" (click)="resetProgress()">
+                <i class="fas fa-undo me-2"></i>Réinitialiser ma progression
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

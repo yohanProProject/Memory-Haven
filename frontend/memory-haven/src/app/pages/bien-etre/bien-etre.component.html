@@ -1,14 +1,332 @@
-<div class="container mt-5">
-  <div class="row justify-content-center">
-    <div class="col-md-8 text-center">
-      <h1 class="display-4 mb-4">Bien-être et Santé</h1>
-      <p class="lead mb-4">
-        Découvrez des conseils, exercices et activités pour maintenir votre bien-être physique et mental. 
-        Explorez nos techniques de relaxation, exercices cognitifs et conseils nutritionnels.
-      </p>
-      <button type="button" class="btn btn-primary btn-lg">Commencer mes exercices</button>
+<!-- Header Section -->
+<section class="wellness-header py-5 bg-gradient-success text-white">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-lg-8">
+        <h1 class="display-4 fw-bold mb-3">
+          <i class="fas fa-heart me-3"></i>Espace Bien-être
+        </h1>
+        <p class="lead mb-4">
+          Prenez soin de votre santé mentale avec nos outils de relaxation et de gestion du stress. 
+          Votre bien-être est essentiel pour votre réussite académique et personnelle.
+        </p>
+        <div class="d-flex flex-wrap gap-3">
+          <button class="btn btn-light btn-lg rounded-pill px-4" (click)="startBreathingExercise()">
+            <i class="fas fa-lungs me-2"></i>Exercice de respiration
+          </button>
+          <button class="btn btn-outline-light btn-lg rounded-pill px-4" (click)="openJournal()">
+            <i class="fas fa-book-open me-2"></i>Journal du bien-être
+          </button>
+        </div>
+      </div>
+      <div class="col-lg-4 text-center">
+        <div class="wellness-widget p-4 bg-white bg-opacity-10 rounded-4 backdrop-blur">
+          <div class="mood-tracker mb-3">
+            <h4 class="fw-bold mb-2">Comment vous sentez-vous ?</h4>
+            <div class="mood-selector d-flex justify-content-center gap-2">
+              <button class="btn mood-btn" 
+                      *ngFor="let mood of moods" 
+                      [class.active]="selectedMood === mood.value"
+                      (click)="selectMood(mood.value)"
+                      [title]="mood.label">
+                {{ mood.emoji }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
+</section>
+
+<!-- Breathing Exercise Modal -->
+<div class="breathing-modal" *ngIf="showBreathingExercise" [@fadeInOut]>
+  <div class="modal-overlay" (click)="stopBreathingExercise()"></div>
+  <div class="modal-content">
+    <div class="breathing-container text-center">
+      <div class="close-btn" (click)="stopBreathingExercise()">
+        <i class="fas fa-times"></i>
+      </div>
+      
+      <h3 class="mb-4">Exercice de Respiration</h3>
+      
+      <div class="breathing-circle" 
+           [class.inhale]="breathingPhase === 'inhale'"
+           [class.hold]="breathingPhase === 'hold'"
+           [class.exhale]="breathingPhase === 'exhale'">
+        <div class="inner-circle">
+          <div class="breathing-text">
+            <div class="phase-text">{{ getBreathingPhaseText() }}</div>
+            <div class="count-text">{{ breathingCount }}</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="breathing-controls mt-4">
+        <button class="btn btn-success rounded-pill me-3" 
+                *ngIf="!isBreathingActive" 
+                (click)="startBreathingCycle()">
+          <i class="fas fa-play me-2"></i>Commencer
+        </button>
+        <button class="btn btn-warning rounded-pill me-3" 
+                *ngIf="isBreathingActive" 
+                (click)="pauseBreathingExercise()">
+          <i class="fas fa-pause me-2"></i>Pause
+        </button>
+        <button class="btn btn-outline-secondary rounded-pill" 
+                (click)="stopBreathingExercise()">
+          <i class="fas fa-stop me-2"></i>Arrêter
+        </button>
+      </div>
+      
+      <div class="breathing-stats mt-3">
+        <small class="text-muted">Cycle {{ breathingCycleCount }}/10</small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Wellness Tools -->
+<section class="wellness-tools py-5">
+  <div class="container">
+    <div class="text-center mb-5">
+      <h2 class="display-6 fw-bold mb-3">Outils de Bien-être</h2>
+      <p class="lead text-muted">Découvrez nos différents outils pour améliorer votre bien-être mental</p>
+    </div>
+    
+    <div class="row g-4">
+      <!-- Breathing Exercises -->
+      <div class="col-lg-4 mb-4">
+        <div class="tool-card h-100 p-4 bg-white rounded-4 shadow-sm hover-lift text-center">
+          <div class="tool-icon mb-4">
+            <div class="icon-wrapper mx-auto rounded-circle bg-gradient-success">
+              <i class="fas fa-lungs fa-3x text-white"></i>
+            </div>
+          </div>
+          <h4 class="fw-bold mb-3">Exercices de Respiration</h4>
+          <p class="text-muted mb-4">
+            Techniques de respiration guidée pour réduire le stress et retrouver le calme. 
+            Parfait avant un examen ou lors d'une pause étude.
+          </p>
+          <div class="exercise-list mb-4">
+            <div class="exercise-item d-flex justify-content-between align-items-center mb-2"
+                 *ngFor="let exercise of breathingExercises">
+              <span class="small">{{ exercise.name }}</span>
+              <button class="btn btn-sm btn-outline-success rounded-pill" 
+                      (click)="startSpecificExercise(exercise.id)">
+                <i class="fas fa-play"></i>
+              </button>
+            </div>
+          </div>
+          <button class="btn btn-success rounded-pill px-4" (click)="startBreathingExercise()">
+            <i class="fas fa-play me-2"></i>Commencer
+          </button>
+        </div>
+      </div>
+      
+      <!-- Relaxing Music -->
+      <div class="col-lg-4 mb-4">
+        <div class="tool-card h-100 p-4 bg-white rounded-4 shadow-sm hover-lift text-center">
+          <div class="tool-icon mb-4">
+            <div class="icon-wrapper mx-auto rounded-circle bg-gradient-primary">
+              <i class="fas fa-music fa-3x text-white"></i>
+            </div>
+          </div>
+          <h4 class="fw-bold mb-3">Musique Relaxante</h4>
+          <p class="text-muted mb-4">
+            Playlist soigneusement sélectionnée pour favoriser la concentration et la détente. 
+            Sons de la nature, musique classique et ambiances zen.
+          </p>
+          
+          <!-- Music Player -->
+          <div class="music-player mb-4">
+            <div class="current-track mb-3" *ngIf="currentTrack">
+              <div class="track-info">
+                <h6 class="mb-1">{{ currentTrack.title }}</h6>
+                <small class="text-muted">{{ currentTrack.artist }}</small>
+              </div>
+              <div class="progress mt-2">
+                <div class="progress-bar bg-primary" 
+                     [style.width]="(currentTime / currentTrack.duration) * 100 + '%'"></div>
+              </div>
+            </div>
+            
+            <div class="player-controls">
+              <button class="btn btn-outline-primary btn-sm rounded-circle me-2" (click)="previousTrack()">
+                <i class="fas fa-step-backward"></i>
+              </button>
+              <button class="btn btn-primary rounded-circle me-2" (click)="togglePlayPause()">
+                <i [class]="isPlaying ? 'fas fa-pause' : 'fas fa-play'"></i>
+              </button>
+              <button class="btn btn-outline-primary btn-sm rounded-circle" (click)="nextTrack()">
+                <i class="fas fa-step-forward"></i>
+              </button>
+            </div>
+          </div>
+          
+          <button class="btn btn-primary rounded-pill px-4" (click)="openMusicLibrary()">
+            <i class="fas fa-list me-2"></i>Bibliothèque
+          </button>
+        </div>
+      </div>
+      
+      <!-- Inspirational Quotes -->
+      <div class="col-lg-4 mb-4">
+        <div class="tool-card h-100 p-4 bg-white rounded-4 shadow-sm hover-lift text-center">
+          <div class="tool-icon mb-4">
+            <div class="icon-wrapper mx-auto rounded-circle bg-gradient-warning">
+              <i class="fas fa-quote-left fa-3x text-white"></i>
+            </div>
+          </div>
+          <h4 class="fw-bold mb-3">Citations Inspirantes</h4>
+          <div class="quote-container mb-4">
+            <blockquote class="quote-text fst-italic mb-3">
+              "{{ currentQuote.text }}"
+            </blockquote>
+            <cite class="quote-author fw-bold text-primary">
+              - {{ currentQuote.author }}
+            </cite>
+          </div>
+          <button class="btn btn-warning rounded-pill px-4 mb-3" (click)="getNewQuote()">
+            <i class="fas fa-sync-alt me-2"></i>Nouvelle citation
+          </button>
+          <div class="quote-actions">
+            <button class="btn btn-outline-secondary btn-sm rounded-pill me-2" (click)="shareQuote()">
+              <i class="fas fa-share me-1"></i>Partager
+            </button>
+            <button class="btn btn-outline-warning btn-sm rounded-pill" (click)="saveQuote()">
+              <i class="fas fa-heart me-1"></i>Sauvegarder
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Wellness Journal -->
+<section class="wellness-journal py-5 bg-light" *ngIf="showJournal" [@slideInOut]>
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="journal-card p-4 bg-white rounded-4 shadow-sm">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="fw-bold mb-0">
+              <i class="fas fa-book-open text-success me-2"></i>Journal du Bien-être
+            </h3>
+            <button class="btn btn-outline-secondary btn-sm rounded-pill" (click)="closeJournal()">
+              <i class="fas fa-times me-1"></i>Fermer
+            </button>
+          </div>
+          
+          <div class="journal-entry mb-4">
+            <label class="form-label fw-semibold">Comment s'est passée votre journée ?</label>
+            <textarea 
+              class="form-control mb-3" 
+              rows="4"
+              [(ngModel)]="journalEntry.content"
+              placeholder="Écrivez vos pensées, vos réussites, vos défis d'aujourd'hui..."></textarea>
+            
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-semibold">Niveau de stress (1-10)</label>
+                <input 
+                  type="range" 
+                  class="form-range" 
+                  min="1" 
+                  max="10" 
+                  [(ngModel)]="journalEntry.stressLevel">
+                <div class="d-flex justify-content-between">
+                  <small class="text-muted">Très calme</small>
+                  <span class="fw-bold text-primary">{{ journalEntry.stressLevel }}</span>
+                  <small class="text-muted">Très stressé</small>
+                </div>
+              </div>
+              
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-semibold">Humeur générale</label>
+                <select class="form-select" [(ngModel)]="journalEntry.mood">
+                  <option value="">Sélectionner votre humeur</option>
+                  <option value="very-happy">Très joyeux 😄</option>
+                  <option value="happy">Joyeux 😊</option>
+                  <option value="neutral">Neutre 😐</option>
+                  <option value="sad">Triste 😢</option>
+                  <option value="very-sad">Très triste 😭</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Activités pratiquées aujourd'hui</label>
+              <div class="activity-tags">
+                <button 
+                  class="btn btn-outline-primary btn-sm rounded-pill me-2 mb-2"
+                  *ngFor="let activity of wellnessActivities"
+                  [class.active]="journalEntry.activities.includes(activity.id)"
+                  (click)="toggleActivity(activity.id)">
+                  <i [class]="activity.icon" class="me-1"></i>{{ activity.name }}
+                </button>
+              </div>
+            </div>
+            
+            <div class="d-flex justify-content-end gap-3">
+              <button class="btn btn-outline-secondary rounded-pill" (click)="resetJournalEntry()">
+                <i class="fas fa-undo me-2"></i>Réinitialiser
+              </button>
+              <button class="btn btn-success rounded-pill" (click)="saveJournalEntry()">
+                <i class="fas fa-save me-2"></i>Sauvegarder l'entrée
+              </button>
+            </div>
+          </div>
+          
+          <!-- Recent Entries -->
+          <div class="recent-entries" *ngIf="recentJournalEntries.length > 0">
+            <h5 class="fw-bold mb-3">Entrées récentes</h5>
+            <div class="entry-item p-3 bg-light rounded-3 mb-2" 
+                 *ngFor="let entry of recentJournalEntries.slice(0, 3)">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <small class="text-muted">{{ entry.date }}</small>
+                <span class="badge bg-primary">Stress: {{ entry.stressLevel }}/10</span>
+              </div>
+              <p class="mb-0 small">{{ entry.content.substring(0, 100) }}...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Quick Actions -->
+<section class="quick-actions py-5">
+  <div class="container">
+    <div class="text-center mb-5">
+      <h2 class="display-6 fw-bold mb-3">Actions Rapides</h2>
+      <p class="lead text-muted">Techniques simples à utiliser en quelques minutes</p>
+    </div>
+    
+    <div class="row g-4">
+      <div class="col-md-6 col-lg-3 mb-3" *ngFor="let action of quickActions">
+        <div class="action-card p-3 bg-white rounded-4 shadow-sm hover-lift text-center cursor-pointer"
+             (click)="executeQuickAction(action.id)">
+          <div class="action-icon mb-3">
+            <i [class]="action.icon + ' fa-2x'" [style.color]="action.color"></i>
+          </div>
+          <h6 class="fw-bold mb-2">{{ action.title }}</h6>
+          <p class="text-muted small mb-0">{{ action.description }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Floating Wellness Button -->
+<div class="fab-container">
+  <button class="fab btn btn-success rounded-circle shadow-lg" 
+          (click)="openQuickWellness()"
+          title="Aide rapide bien-être">
+    <i class="fas fa-spa"></i>
+  </button>
 </div>
 
 

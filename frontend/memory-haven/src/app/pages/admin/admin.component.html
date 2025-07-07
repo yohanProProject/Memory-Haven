@@ -1,12 +1,603 @@
-<div class="container mt-5">
-  <div class="row justify-content-center">
-    <div class="col-md-8 text-center">
-      <h1 class="display-4 mb-4">Administration</h1>
-      <p class="lead mb-4">
-        Panneau de contrôle pour les administrateurs de Memory Haven. 
-        Gérez les utilisateurs, modérez le contenu et configurez les paramètres de la plateforme.
-      </p>
-      <button type="button" class="btn btn-primary btn-lg">Accéder au tableau de bord</button>
+<!-- Header Section -->
+<section class="admin-header py-4 bg-gradient-admin text-white">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-lg-8">
+        <div class="admin-title">
+          <h1 class="display-5 fw-bold mb-2">
+            <i class="fas fa-shield-alt me-3"></i>Panneau d'Administration
+          </h1>
+          <p class="lead mb-0">Gérez Memory Haven et supervisez la communauté</p>
+        </div>
+      </div>
+      <div class="col-lg-4 text-end">
+        <div class="admin-actions">
+          <button class="btn btn-light btn-sm rounded-pill me-2" (click)="refreshData()">
+            <i class="fas fa-sync-alt me-2"></i>Actualiser
+          </button>
+          <button class="btn btn-outline-light btn-sm rounded-pill" (click)="exportData()">
+            <i class="fas fa-download me-2"></i>Exporter
+          </button>
+        </div>
+      </div>
     </div>
   </div>
-</div>
+</section>
+
+<!-- Navigation Tabs -->
+<section class="admin-navigation py-3 bg-light">
+  <div class="container">
+    <ul class="nav nav-pills justify-content-center">
+      <li class="nav-item">
+        <button class="nav-link rounded-pill" 
+                [class.active]="activeTab === 'dashboard'"
+                (click)="setActiveTab('dashboard')">
+          <i class="fas fa-chart-line me-2"></i>Dashboard
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link rounded-pill" 
+                [class.active]="activeTab === 'users'"
+                (click)="setActiveTab('users')">
+          <i class="fas fa-users me-2"></i>Utilisateurs
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link rounded-pill" 
+                [class.active]="activeTab === 'moderation'"
+                (click)="setActiveTab('moderation')">
+          <i class="fas fa-gavel me-2"></i>Modération
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link rounded-pill" 
+                [class.active]="activeTab === 'content'"
+                (click)="setActiveTab('content')">
+          <i class="fas fa-file-alt me-2"></i>Contenu
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link rounded-pill" 
+                [class.active]="activeTab === 'settings'"
+                (click)="setActiveTab('settings')">
+          <i class="fas fa-cog me-2"></i>Paramètres
+        </button>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- Tab Content -->
+<section class="tab-content py-5">
+  <div class="container">
+    
+    <!-- Dashboard Tab -->
+    <div class="tab-pane" *ngIf="activeTab === 'dashboard'" [@slideInOut]>
+      <!-- Statistics Overview -->
+      <div class="row g-4 mb-5">
+        <div class="col-lg-3 col-md-6" *ngFor="let stat of dashboardStats">
+          <div class="stat-card p-4 bg-white rounded-4 shadow-sm hover-lift h-100">
+            <div class="d-flex align-items-center">
+              <div class="stat-icon me-3">
+                <div class="icon-wrapper rounded-3 p-3" [style.background]="stat.color">
+                  <i [class]="stat.icon" class="fa-2x text-white"></i>
+                </div>
+              </div>
+              <div class="flex-grow-1">
+                <h3 class="fw-bold text-primary mb-1">{{ stat.value }}</h3>
+                <p class="text-muted mb-1">{{ stat.label }}</p>
+                <small [class]="stat.trend > 0 ? 'text-success' : 'text-danger'">
+                  <i [class]="stat.trend > 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down'" class="me-1"></i>
+                  {{ Math.abs(stat.trend) }}% ce mois
+                </small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts Row -->
+      <div class="row g-4 mb-5">
+        <div class="col-lg-8">
+          <div class="chart-card p-4 bg-white rounded-4 shadow-sm">
+            <h4 class="fw-bold mb-4">Activité mensuelle</h4>
+            <div class="chart-placeholder">
+              <canvas #monthlyChart width="400" height="200"></canvas>
+              <!-- Simulation de graphique -->
+              <div class="simulated-chart">
+                <div class="chart-bars d-flex align-items-end justify-content-between" style="height: 200px;">
+                  <div class="chart-bar" 
+                       *ngFor="let data of monthlyData; let i = index"
+                       [style.height]="(data.value / maxMonthlyValue) * 100 + '%'"
+                       [style.background]="'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'">
+                  </div>
+                </div>
+                <div class="chart-labels d-flex justify-content-between mt-3">
+                  <small class="text-muted" *ngFor="let data of monthlyData">{{ data.label }}</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-lg-4">
+          <div class="alerts-card p-4 bg-white rounded-4 shadow-sm">
+            <h5 class="fw-bold mb-4">Alertes récentes</h5>
+            
+            <div class="alert-item d-flex align-items-start mb-3" *ngFor="let alert of recentAlerts">
+              <div class="alert-icon me-3">
+                <div class="icon-wrapper rounded-circle" [style.background]="getAlertColor(alert.type)">
+                  <i [class]="getAlertIcon(alert.type)" class="text-white"></i>
+                </div>
+              </div>
+              <div class="flex-grow-1">
+                <h6 class="fw-bold mb-1">{{ alert.title }}</h6>
+                <p class="text-muted mb-1 small">{{ alert.description }}</p>
+                <small class="text-muted">{{ alert.time }}</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Activity -->
+      <div class="recent-activity-card p-4 bg-white rounded-4 shadow-sm">
+        <h4 class="fw-bold mb-4">Activité récente du système</h4>
+        <div class="activity-list">
+          <div class="activity-item d-flex align-items-center py-3 border-bottom"
+               *ngFor="let activity of recentSystemActivity">
+            <div class="activity-icon me-3">
+              <i [class]="activity.icon" [style.color]="activity.color"></i>
+            </div>
+            <div class="flex-grow-1">
+              <p class="mb-1">{{ activity.description }}</p>
+              <small class="text-muted">{{ activity.time }}</small>
+            </div>
+            <div class="activity-meta">
+              <span class="badge" [style.background]="activity.color">{{ activity.type }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Users Tab -->
+    <div class="tab-pane" *ngIf="activeTab === 'users'" [@slideInOut]>
+      <!-- Users Header -->
+      <div class="users-header d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold mb-0">Gestion des utilisateurs</h3>
+        <div class="users-actions">
+          <button class="btn btn-outline-primary rounded-pill me-2" (click)="exportUsers()">
+            <i class="fas fa-download me-2"></i>Exporter
+          </button>
+          <button class="btn btn-primary rounded-pill" (click)="addUser()">
+            <i class="fas fa-user-plus me-2"></i>Ajouter utilisateur
+          </button>
+        </div>
+      </div>
+
+      <!-- Users Filters -->
+      <div class="users-filters p-4 bg-white rounded-4 shadow-sm mb-4">
+        <div class="row g-3">
+          <div class="col-md-3">
+            <input type="text" 
+                   class="form-control" 
+                   placeholder="Rechercher un utilisateur..."
+                   [(ngModel)]="usersFilter.search"
+                   (input)="filterUsers()">
+          </div>
+          <div class="col-md-2">
+            <select class="form-select" [(ngModel)]="usersFilter.role" (change)="filterUsers()">
+              <option value="">Tous les rôles</option>
+              <option value="student">Étudiant</option>
+              <option value="moderator">Modérateur</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <select class="form-select" [(ngModel)]="usersFilter.status" (change)="filterUsers()">
+              <option value="">Tous les statuts</option>
+              <option value="active">Actif</option>
+              <option value="suspended">Suspendu</option>
+              <option value="banned">Banni</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <select class="form-select" [(ngModel)]="usersFilter.sortBy" (change)="filterUsers()">
+              <option value="name">Nom</option>
+              <option value="email">Email</option>
+              <option value="joinDate">Date d'inscription</option>
+              <option value="lastActivity">Dernière activité</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <button class="btn btn-outline-secondary w-100" (click)="resetUsersFilter()">
+              <i class="fas fa-undo me-2"></i>Reset
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Users Table -->
+      <div class="users-table-card p-4 bg-white rounded-4 shadow-sm">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Utilisateur</th>
+                <th>Email</th>
+                <th>Rôle</th>
+                <th>Statut</th>
+                <th>Dernière activité</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let user of filteredUsers">
+                <td>
+                  <div class="d-flex align-items-center">
+                    <img [src]="user.avatar" 
+                         [alt]="user.name"
+                         class="user-avatar rounded-circle me-3"
+                         *ngIf="user.avatar">
+                    <div class="user-placeholder rounded-circle me-3" *ngIf="!user.avatar">
+                      <i class="fas fa-user"></i>
+                    </div>
+                    <div>
+                      <h6 class="mb-0">{{ user.name }}</h6>
+                      <small class="text-muted">ID: {{ user.id }}</small>
+                    </div>
+                  </div>
+                </td>
+                <td>{{ user.email }}</td>
+                <td>
+                  <span class="badge" [class]="getRoleBadgeClass(user.role)">
+                    {{ getRoleLabel(user.role) }}
+                  </span>
+                </td>
+                <td>
+                  <span class="badge" [class]="getStatusBadgeClass(user.status)">
+                    {{ getStatusLabel(user.status) }}
+                  </span>
+                </td>
+                <td>{{ user.lastActivity }}</td>
+                <td>
+                  <div class="btn-group">
+                    <button class="btn btn-sm btn-outline-primary" (click)="viewUser(user)">
+                      <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-warning" (click)="editUser(user)">
+                      <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" (click)="suspendUser(user)">
+                      <i class="fas fa-ban"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <nav class="mt-4">
+          <ul class="pagination justify-content-center">
+            <li class="page-item" [class.disabled]="currentPage === 1">
+              <button class="page-link" (click)="changePage(currentPage - 1)">Précédent</button>
+            </li>
+            <li class="page-item" 
+                *ngFor="let page of getPageNumbers()" 
+                [class.active]="page === currentPage">
+              <button class="page-link" (click)="changePage(page)">{{ page }}</button>
+            </li>
+            <li class="page-item" [class.disabled]="currentPage === totalPages">
+              <button class="page-link" (click)="changePage(currentPage + 1)">Suivant</button>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+
+    <!-- Moderation Tab -->
+    <div class="tab-pane" *ngIf="activeTab === 'moderation'" [@slideInOut]>
+      <!-- Moderation Header -->
+      <div class="moderation-header d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold mb-0">Centre de modération</h3>
+        <div class="moderation-stats d-flex gap-3">
+          <div class="stat-badge">
+            <span class="badge bg-warning text-dark">{{ pendingReports.length }} signalements</span>
+          </div>
+          <div class="stat-badge">
+            <span class="badge bg-danger">{{ urgentReports.length }} urgents</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="quick-actions p-4 bg-white rounded-4 shadow-sm mb-4">
+        <h5 class="fw-bold mb-3">Actions rapides</h5>
+        <div class="row g-3">
+          <div class="col-md-3">
+            <button class="btn btn-outline-danger w-100" (click)="reviewReports()">
+              <i class="fas fa-flag me-2"></i>Signalements ({{ pendingReports.length }})
+            </button>
+          </div>
+          <div class="col-md-3">
+            <button class="btn btn-outline-warning w-100" (click)="reviewComments()">
+              <i class="fas fa-comments me-2"></i>Commentaires à modérer
+            </button>
+          </div>
+          <div class="col-md-3">
+            <button class="btn btn-outline-info w-100" (click)="reviewResources()">
+              <i class="fas fa-file-alt me-2"></i>Ressources à valider
+            </button>
+          </div>
+          <div class="col-md-3">
+            <button class="btn btn-outline-secondary w-100" (click)="moderationHistory()">
+              <i class="fas fa-history me-2"></i>Historique
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reports List -->
+      <div class="reports-card p-4 bg-white rounded-4 shadow-sm">
+        <h5 class="fw-bold mb-4">Signalements récents</h5>
+        
+        <div class="report-item p-3 border rounded-3 mb-3" 
+             *ngFor="let report of recentReports"
+             [class.border-danger]="report.priority === 'high'"
+             [class.border-warning]="report.priority === 'medium'">
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <div class="report-info">
+              <h6 class="fw-bold mb-1">{{ report.title }}</h6>
+              <p class="text-muted mb-2">{{ report.description }}</p>
+              <div class="report-meta">
+                <span class="badge bg-light text-dark me-2">{{ report.type }}</span>
+                <span class="badge" [class]="getPriorityBadgeClass(report.priority)">
+                  {{ getPriorityLabel(report.priority) }}
+                </span>
+                <small class="text-muted ms-2">Signalé par {{ report.reportedBy }} • {{ report.date }}</small>
+              </div>
+            </div>
+            <div class="report-actions">
+              <button class="btn btn-sm btn-outline-success me-2" (click)="approveReport(report)">
+                <i class="fas fa-check"></i>
+              </button>
+              <button class="btn btn-sm btn-outline-danger me-2" (click)="rejectReport(report)">
+                <i class="fas fa-times"></i>
+              </button>
+              <button class="btn btn-sm btn-outline-primary" (click)="viewReportDetails(report)">
+                <i class="fas fa-eye"></i>
+              </button>
+            </div>
+          </div>
+          
+          <div class="reported-content p-3 bg-light rounded-3">
+            <h6 class="fw-bold mb-2">Contenu signalé :</h6>
+            <p class="mb-0">{{ report.content }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Content Tab -->
+    <div class="tab-pane" *ngIf="activeTab === 'content'" [@slideInOut]>
+      <!-- Content Header -->
+      <div class="content-header d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold mb-0">Gestion du contenu</h3>
+        <div class="content-actions">
+          <button class="btn btn-primary rounded-pill" (click)="addContent()">
+            <i class="fas fa-plus me-2"></i>Ajouter contenu
+          </button>
+        </div>
+      </div>
+
+      <!-- Content Categories -->
+      <div class="content-categories mb-4">
+        <div class="row g-4">
+          <div class="col-md-3" *ngFor="let category of contentCategories">
+            <div class="category-card p-4 bg-white rounded-4 shadow-sm hover-lift text-center">
+              <div class="category-icon mb-3">
+                <i [class]="category.icon" class="fa-3x" [style.color]="category.color"></i>
+              </div>
+              <h5 class="fw-bold mb-2">{{ category.name }}</h5>
+              <p class="text-muted mb-3">{{ category.count }} éléments</p>
+              <button class="btn btn-outline-primary btn-sm rounded-pill" (click)="manageCategory(category)">
+                Gérer
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Content -->
+      <div class="recent-content-card p-4 bg-white rounded-4 shadow-sm">
+        <h5 class="fw-bold mb-4">Contenu récent</h5>
+        
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Titre</th>
+                <th>Type</th>
+                <th>Auteur</th>
+                <th>Date</th>
+                <th>Statut</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let content of recentContent">
+                <td>
+                  <div class="d-flex align-items-center">
+                    <i [class]="getContentIcon(content.type)" class="me-3" [style.color]="getContentColor(content.type)"></i>
+                    <div>
+                      <h6 class="mb-0">{{ content.title }}</h6>
+                      <small class="text-muted">{{ content.description }}</small>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span class="badge bg-light text-dark">{{ content.type }}</span>
+                </td>
+                <td>{{ content.author }}</td>
+                <td>{{ content.date }}</td>
+                <td>
+                  <span class="badge" [class]="getContentStatusBadgeClass(content.status)">
+                    {{ getContentStatusLabel(content.status) }}
+                  </span>
+                </td>
+                <td>
+                  <div class="btn-group">
+                    <button class="btn btn-sm btn-outline-primary" (click)="viewContent(content)">
+                      <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-warning" (click)="editContent(content)">
+                      <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" (click)="deleteContent(content)">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings Tab -->
+    <div class="tab-pane" *ngIf="activeTab === 'settings'" [@slideInOut]>
+      <!-- Settings Header -->
+      <div class="settings-header mb-4">
+        <h3 class="fw-bold mb-2">Paramètres de la plateforme</h3>
+        <p class="text-muted">Configurez les paramètres généraux de Memory Haven</p>
+      </div>
+
+      <div class="row g-4">
+        <!-- General Settings -->
+        <div class="col-lg-6">
+          <div class="settings-card p-4 bg-white rounded-4 shadow-sm">
+            <h5 class="fw-bold mb-4">Paramètres généraux</h5>
+            
+            <div class="setting-item mb-4">
+              <label class="form-label fw-semibold">Nom de la plateforme</label>
+              <input type="text" class="form-control" [(ngModel)]="platformSettings.name">
+            </div>
+            
+            <div class="setting-item mb-4">
+              <label class="form-label fw-semibold">Description</label>
+              <textarea class="form-control" rows="3" [(ngModel)]="platformSettings.description"></textarea>
+            </div>
+            
+            <div class="setting-item mb-4">
+              <label class="form-label fw-semibold">Email de contact</label>
+              <input type="email" class="form-control" [(ngModel)]="platformSettings.contactEmail">
+            </div>
+            
+            <div class="setting-item mb-4">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" [(ngModel)]="platformSettings.allowRegistration">
+                <label class="form-check-label fw-semibold">Autoriser les nouvelles inscriptions</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Security Settings -->
+        <div class="col-lg-6">
+          <div class="settings-card p-4 bg-white rounded-4 shadow-sm">
+            <h5 class="fw-bold mb-4">Sécurité</h5>
+            
+            <div class="setting-item mb-4">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" [(ngModel)]="securitySettings.requireEmailVerification">
+                <label class="form-check-label fw-semibold">Vérification email obligatoire</label>
+              </div>
+            </div>
+            
+            <div class="setting-item mb-4">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" [(ngModel)]="securitySettings.enableTwoFactor">
+                <label class="form-check-label fw-semibold">Authentification à deux facteurs</label>
+              </div>
+            </div>
+            
+            <div class="setting-item mb-4">
+              <label class="form-label fw-semibold">Durée de session (minutes)</label>
+              <input type="number" class="form-control" [(ngModel)]="securitySettings.sessionDuration">
+            </div>
+            
+            <div class="setting-item mb-4">
+              <label class="form-label fw-semibold">Tentatives de connexion max</label>
+              <input type="number" class="form-control" [(ngModel)]="securitySettings.maxLoginAttempts">
+            </div>
+          </div>
+        </div>
+
+        <!-- Content Settings -->
+        <div class="col-lg-6">
+          <div class="settings-card p-4 bg-white rounded-4 shadow-sm">
+            <h5 class="fw-bold mb-4">Contenu</h5>
+            
+            <div class="setting-item mb-4">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" [(ngModel)]="contentSettings.moderateContent">
+                <label class="form-check-label fw-semibold">Modération automatique</label>
+              </div>
+            </div>
+            
+            <div class="setting-item mb-4">
+              <label class="form-label fw-semibold">Taille max fichier (MB)</label>
+              <input type="number" class="form-control" [(ngModel)]="contentSettings.maxFileSize">
+            </div>
+            
+            <div class="setting-item mb-4">
+              <label class="form-label fw-semibold">Types de fichiers autorisés</label>
+              <input type="text" class="form-control" [(ngModel)]="contentSettings.allowedFileTypes" 
+                     placeholder="pdf, doc, jpg, png">
+            </div>
+          </div>
+        </div>
+
+        <!-- Notification Settings -->
+        <div class="col-lg-6">
+          <div class="settings-card p-4 bg-white rounded-4 shadow-sm">
+            <h5 class="fw-bold mb-4">Notifications</h5>
+            
+            <div class="setting-item mb-4">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" [(ngModel)]="notificationSettings.emailNotifications">
+                <label class="form-check-label fw-semibold">Notifications par email</label>
+              </div>
+            </div>
+            
+            <div class="setting-item mb-4">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" [(ngModel)]="notificationSettings.pushNotifications">
+                <label class="form-check-label fw-semibold">Notifications push</label>
+              </div>
+            </div>
+            
+            <div class="setting-item mb-4">
+              <label class="form-label fw-semibold">Email administrateur</label>
+              <input type="email" class="form-control" [(ngModel)]="notificationSettings.adminEmail">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Save Settings -->
+      <div class="settings-actions mt-5 text-center">
+        <button class="btn btn-primary btn-lg rounded-pill me-3" (click)="saveSettings()">
+          <i class="fas fa-save me-2"></i>Sauvegarder les paramètres
+        </button>
+        <button class="btn btn-outline-secondary btn-lg rounded-pill" (click)="resetSettings()">
+          <i class="fas fa-undo me-2"></i>Réinitialiser
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
