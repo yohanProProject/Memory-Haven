@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "X9i8mW0Qo0A=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\FALL\\OpenInnov\\backend\\MemoryHaven.API\\MemoryHaven.API.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\FALL\\.nuget\\packages\\microsoft.aspnetcore.openapi\\9.0.6\\microsoft.aspnetcore.openapi.9.0.6.nupkg.sha512",
+    "C:\\Users\\FALL\\.nuget\\packages\\microsoft.openapi\\1.6.17\\microsoft.openapi.1.6.17.nupkg.sha512"
+  ],
+  "logs": []
+}
